@@ -47,23 +47,35 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 	
 	static final String NUMBER_OF_UNITS = "chNumStackUnits";
 	static final String UNIT_DESCRIPTION = "chStackUnitDescription";
-	static final String UNIT_NAME = "mib-2.1.5.0"
+	static final String UNIT_NAME = "mib-2.1.5.0";
 
 	public List getServerResources(ConfigResponse platformConfig) throws PluginException {
 		List servers = new ArrayList();
-		private SNMPClient client = new SNMPClient();
+		SNMPClient client = new SNMPClient();
 		SNMPSession session;
-		session = client.getSession(config);
-		int count = session.getSingleValue(NUMBER_OF_UNITS).toLong().intValue();
-
-		for ( int unit=1; unit <= count; unit++ ) {
-			ServerResource server = createServerResource(session.getSingleValue(UNIT_NAME).toString() + ":" + unit);
-			ConfigResponse productConfig = new ConfigResponse();
-			productConfig.setValue("unitNumber" , unit);
-			productConfig.setValue("Description", session.getSingleValue(UNIT_DESCRIPTION).toString());
-			server.setProductConfig(productConfig);
-			servers.add(server);
+		try {
+			session = client.getSession(config);
+			int count = (int) session.getSingleValue(NUMBER_OF_UNITS).toLong();
+			for ( int unit=1; unit <= count; unit++ ) {
+				try {
+					ServerResource server = createServerResource(session.getSingleValue(UNIT_NAME).toString() + ":" + unit);
+					ConfigResponse productConfig = new ConfigResponse();
+					productConfig.setValue("unitNumber" , unit);
+					try {
+						productConfig.setValue("Description", session.getSingleValue(UNIT_DESCRIPTION).toString());
+					} catch (SNMPException e) {
+						throw new SNMPException("Error getting SNMP value: " + e.getMessage(), e);
+					}
+					server.setProductConfig(productConfig);
+					servers.add(server);
+				} catch (SNMPException e) {
+					throw new SNMPException("Error getting SNMP value: " + e.getMessage(), e);
+				}
+			}
+		} catch (SNMPException e) {
+			throw new PluginException("Error getting SNMP value: " + e.getMessage(), e);
 		}
+
 		return servers;
 	}
 }
