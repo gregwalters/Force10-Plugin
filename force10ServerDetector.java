@@ -35,9 +35,12 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import org.hyperic.hq.product.AutoServerDetector;
+import org.hyperic.hq.product.RuntimeDiscoverer;
+import org.hyperic.hq.product.RuntimeResourceReport;
 import org.hyperic.hq.product.PluginException;
 import org.hyperic.hq.product.ServerDetector;
+import org.hyperic.hq.appdef.shared.AIPlatformValue;
+import org.hyperic.hq.appdef.shared.AIServerExtValue;
 import org.hyperic.hq.product.ServerResource;
 import org.hyperic.util.config.ConfigResponse;
 
@@ -46,25 +49,30 @@ import org.hyperic.snmp.SNMPException;
 import org.hyperic.snmp.SNMPSession;
 import org.hyperic.snmp.SNMPValue;
 
-public class force10ServerDetector  extends ServerDetector implements AutoServerDetector {
-	
-	static final String NUMBER_OF_UNITS = "chNumStackUnits";
-	static final String UNIT_DESCRIPTION = "chStackUnitDescription";
-	static final String UNIT_NAME = "mib-2.1.5.0";
-	private transient Log log =  LogFactory.getLog("force10ServerDetector");
+public class force10ServerDetector  extends ServerDetector implements RuntimeDiscoverer {
 
-	public List getServerResources(ConfigResponse platformConfig) throws PluginException {
-		List servers = new ArrayList();
+        static final String NUMBER_OF_UNITS = "chNumStackUnits";
+        static final String UNIT_DESCRIPTION = "chStackUnitDescription";
+        static final String UNIT_NAME = "mib-2.1.5.0";
+        private transient Log log =  LogFactory.getLog("force10ServerDetector");
+
+        public RuntimeResourceReport discoverResources(int serverId, AIPlatformValue aiplatform, ConfigResponse platformConfig)
+            throws PluginException {
+		
+		RuntimeResourceReport rrr = new RuntimeResourceReport(serverId);
 		SNMPClient client = new SNMPClient();
 		SNMPSession session;
-		log.debug("started plugin scanner");
+
+		log.debug("Running discover using config: " + platformConfig);
 		try {
 			session = client.getSession(config);
 			int count = (int) session.getSingleValue(NUMBER_OF_UNITS).toLong();
-			log.debug("got number of units in stack as :" + count);
+			log.debug("Number of units in stack: " + count);
 			for ( int unit=1; unit <= count; unit++ ) {
+				AIServerExtValue server = new AIServerExtValue();
+				//this should probably be a unique id for each server :(
+				server.setId(new Integer(serverId));
 				try {
-					ServerResource server = createServerResource(session.getSingleValue(UNIT_NAME).toString() + ":" + unit);
 					ConfigResponse productConfig = new ConfigResponse();
 					productConfig.setValue("unitNumber" , unit);
 					try {
@@ -72,8 +80,12 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 					} catch (SNMPException e) {
 						throw new SNMPException("Error getting SNMP value: " + e.getMessage(), e);
 					}
-					server.setProductConfig(productConfig);
-					servers.add(server);
+					try {
+						server.setProductConfig(productConfig.encode());
+					} catch (Exception e) {
+						throw new PluginException("Unable to generate product config.");
+					}
+					aiplatform.addAIServerValue(server);
 				} catch (SNMPException e) {
 					throw new SNMPException("Error getting SNMP value: " + e.getMessage(), e);
 				}
@@ -82,6 +94,7 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 			throw new PluginException("Error getting SNMP value: " + e.getMessage(), e);
 		}
 
-		return servers;
+		rrr.addAIPlatform(aiplatform);
+		return rrr;
 	}
 }
