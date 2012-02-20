@@ -27,10 +27,13 @@
 //  and Atlassian. For additional information, visit www.contegix.com or call 
 //  1(877) 426-6834.
 
-package com.contegix.hyperic.force10.plugin;
+package com.contegix.gregwalters.hyperic.hq.plugin.force10;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import org.hyperic.hq.product.AutoServerDetector;
 import org.hyperic.hq.product.PluginException;
@@ -48,14 +51,17 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 	static final String NUMBER_OF_UNITS = "chNumStackUnits";
 	static final String UNIT_DESCRIPTION = "chStackUnitDescription";
 	static final String UNIT_NAME = "mib-2.1.5.0";
+	private transient Log log =  LogFactory.getLog("force10ServerDetector");
 
 	public List getServerResources(ConfigResponse platformConfig) throws PluginException {
 		List servers = new ArrayList();
 		SNMPClient client = new SNMPClient();
 		SNMPSession session;
+		log.debug("started plugin scanner");
 		try {
 			session = client.getSession(config);
 			int count = (int) session.getSingleValue(NUMBER_OF_UNITS).toLong();
+			log.debug("got number of units in stack as :" + count);
 			for ( int unit=1; unit <= count; unit++ ) {
 				try {
 					ServerResource server = createServerResource(session.getSingleValue(UNIT_NAME).toString() + ":" + unit);
