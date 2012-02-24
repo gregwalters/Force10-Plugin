@@ -38,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.hyperic.hq.product.RuntimeDiscoverer;
 import org.hyperic.hq.product.RuntimeResourceReport;
 import org.hyperic.hq.product.PluginException;
+import org.hyperic.hq.product.AutoServerDetector;
 import org.hyperic.hq.product.ServerDetector;
 import org.hyperic.hq.appdef.shared.AIPlatformValue;
 import org.hyperic.hq.appdef.shared.AIServerExtValue;
@@ -49,7 +50,7 @@ import org.hyperic.snmp.SNMPException;
 import org.hyperic.snmp.SNMPSession;
 import org.hyperic.snmp.SNMPValue;
 
-public class force10ServerDetector  extends ServerDetector implements RuntimeDiscoverer {
+public class force10ServerDetector  extends ServerDetector implements AutoServerDetector {
 
         static final String NUMBER_OF_UNITS = "chNumStackUnits";
         static final String UNIT_DESCRIPTION = "chStackUnitDescription";
@@ -96,5 +97,30 @@ public class force10ServerDetector  extends ServerDetector implements RuntimeDis
 
 		rrr.addAIPlatform(aiplatform);
 		return rrr;
+	}
+
+	public List discoverServers(ServerDetector plugin, ConfigResponse config, SNMPSession session, String type) {
+		log.debug("In discoverServers(ServerDetector plugin, ConfigResponse config, SNMPSession session, String type)");
+		return new ArrayList();
+	}
+
+	public List discoverServers(ConfigResponse config) {
+		log.debug("In discoverServers(ConfigResponse config)");
+		return new ArrayList();
+	}
+
+	public List getServerResources(ConfigResponse config) {
+		log.debug("In getServerResources(ConfigResponse conf)");
+		return new ArrayList();
+	}
+
+	public List discoverServices(ConfigResponse config) {
+		log.debug("In  discoverServices(ConfigResponse config)");
+		return new ArrayList();
+	}
+
+	public List discoverServerResources(ConfigResponse config) {
+		log.debug("In  discoverServerResources(ConfigResponse config)");
+		return new ArrayList();
 	}
 }

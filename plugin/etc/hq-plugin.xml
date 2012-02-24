@@ -1,0 +1,146 @@
+<plugin name="force10">
+<!-- <property name="MIBDIR" value="/usr/share/snmp/mibs"/>
+<property name="MIBS" value="${MIBDIR}/f10-ss-chassis.mib"/> -->
+    <classpath>
+      <include name="pdk/plugins/netdevice-plugin.jar"/>
+    </classpath>
+	<platform name="Force10 Switch Stack">
+		<config include="snmp"/>
+		<properties>
+			<property name="mib-2.1.1.0" description="Software" />
+			<property name="mib-2.1.5.0" description="Configured name" />
+			<property name="chNumStackUnits" description="Number of stack units" />
+			<property name="chNumMaxStackableUnits" description="Maximum allowed unit number on chassis" />
+		</properties>
+
+	<!--	<plugin type="autoinventory" class="org.hyperic.hq.plugin.netdevice.NetworkDevicePlatformDetector"/> -->
+		<plugin type="autoinventory" class="com.contegix.gregwalters.hyperic.hq.plugin.force10.force10PlatformDetector" />
+
+		<plugin type="measurement" class="org.hyperic.hq.product.SNMPMeasurementPlugin"/>
+
+		<property name="template" value="${snmp.template}:${alias}"/>
+
+		<metric name="Availability"
+			template="${snmp.template},Avail=true:sysUpTime"
+			indicator="true"/>
+		<metric name="Uptime"
+			alias="sysUpTime"
+			category="AVAILABILITY"
+			units="jiffys"
+			defaultOn="true"
+			collectionType="static"/>
+
+		<server name="Stack Unit">
+			<config>
+				<option name="unitNumber" description="Stack Unit Number"/>
+			</config>
+
+		<!--	<plugin type="autoinventory" class="com.contegix.gregwalters.hyperic.hq.plugin.force10.force10ServerDetector"/> -->
+			<!-- <plugin type="autoinventory" class="org.hyperic.hq.product.jmx.MxServerDetector"/> -->
+			<plugin type="measurement" class="net.hyperic.hq.product.SNMPMeasurementPlugin"/>
+
+			<properties>
+				<property name="chStackUnitNumber" description="Stack Unit Number" />
+				<property name="chStackUnitModelID" description="Model ID" />
+				<property name="chStackUnitDescription" description="Unit description" />
+				<property name="chStackUnitCodeVersion" description="Code Version" />
+				<property name="chStackUnitSerialNumber" description="Serial Number" />
+                                <property name="chStackUnitMfgDate" description="Manufacture Date" />
+                                <property name="chStackUnitMacAddress" description="Unit MAC address" />
+			</properties>
+
+			<property name="HAS_BUILTIN_SERVICES" value="true"/>
+
+	                <metric name="Availability"
+	                        template="${snmp.template},Avail=true:chStackUnitUpTime"
+	                        indicator="true"/>
+	                <metric name="Uptime"
+	                        alias="chStackUnitUpTime"
+                        	category="AVAILABILITY"
+                	        units="jiffys"
+        	                defaultOn="true"
+	                        collectionType="trendsup"/>
+			<metric name="Management Status"
+				template="${snmp.template}:chStackUnitMgmtStatus"
+				category="Utilization"
+				unit="none"
+				defaultOn="true"
+				collectionType="dynamic"/>
+                        <metric name="Management Preference"
+                                template="${snmp.template}:chStackUnitAdmMgmtPreference"
+                                category="Utilization"
+                                unit="none"
+                                defaultOn="true"
+                                collectionType="dynamic"/>
+                        <metric name="Unit Status"
+                                template="${snmp.template}:chStackUnitStatus"
+                                category="Utilization"
+                                unit="none"
+                                defaultOn="true"
+				indicator="true"
+                                collectionType="dynamic"/>
+                        <metric name="Unit Temperature"
+                                template="${snmp.template}:chStackUnitTemp"
+                                category="Utilization"
+                                unit="none"
+                                defaultOn="true"
+                                indicator="true"
+                                collectionType="dynamic"/>
+                        <metric name="Fan Tray Status"
+                                template="${snmp.template}:chSysFanTrayOperStatus"
+                                category="Utilization"
+                                unit="none"
+                                defaultOn="true"
+                                indicator="true"
+                                collectionType="dynamic"/>
+                        <metric name="CPU Type"
+                                template="${snmp.template}:chStackUnitCpuType"
+                                category="Utilization"
+                                unit="none"
+                                defaultOn="true"
+                                indicator="false"
+                                collectionType="dynamic"/>
+                        <metric name="CPU Usage 5 sec Avg"
+                                template="${snmp.template}:chStackUnitCpuUtil5Sec"
+                                category="Utilization"
+                                unit="percentage"
+                                defaultOn="true"
+                                indicator="true"
+                                collectionType="dynamic"/>
+                        <metric name="CPU Usage 1 min Avg"
+                                template="${snmp.template}:chStackUnitCpuUtil1Min"
+                                category="Utilization"
+                                unit="percentage"
+                                defaultOn="true"
+                                indicator="true"
+                                collectionType="dynamic"/>
+                        <metric name="CPU Usage 5 min Avg"
+                                template="${snmp.template}:chStackUnitCpuUtil5Min"
+                                category="Utilization"
+                                unit="percentage"
+                                defaultOn="true"
+                                indicator="true"
+                                collectionType="dynamic"/>
+                        <metric name="Memory Usage"
+                                template="${snmp.template}:chStackUnitMemUsageUtil"
+                                category="Utilization"
+                                unit="percentage"
+                                defaultOn="true"
+                                indicator="true"
+                                collectionType="dynamic"/>
+			<service name="Interface">
+				<config>
+					<option name="snmpIndexValue" description="Interface Name"/>
+				</config>
+
+				<property name="snmpIndexName" value="nsIfName"/>
+
+				<metric name="Availability"
+					template="${snmp.template},Avail=true:nsIfStatus:${index}"
+					indicator="true"/>
+
+				<!-- http://support.hyperic.com/display/DOCS46/Write+an+SNMP+Plugin -->
+			</service>
+		</server>
+	</platform>
+</plugin>
