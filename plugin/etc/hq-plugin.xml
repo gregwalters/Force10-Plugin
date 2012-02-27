@@ -35,7 +35,7 @@
 				<option name="unitNumber" description="Stack Unit Number"/>
 			</config>
 
-		<!--	<plugin type="autoinventory" class="com.contegix.gregwalters.hyperic.hq.plugin.force10.force10ServerDetector"/> -->
+			<plugin type="autoinventory" class="com.contegix.gregwalters.hyperic.hq.plugin.force10.force10ServerDetector"/> 
 			<!-- <plugin type="autoinventory" class="org.hyperic.hq.product.jmx.MxServerDetector"/> -->
 			<plugin type="measurement" class="net.hyperic.hq.product.SNMPMeasurementPlugin"/>
 

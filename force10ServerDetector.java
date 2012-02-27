@@ -57,27 +57,24 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
         static final String UNIT_NAME = "mib-2.1.5.0";
         private transient Log log =  LogFactory.getLog("force10ServerDetector");
 
-        public RuntimeResourceReport discoverResources(int serverId, AIPlatformValue aiplatform, ConfigResponse platformConfig)
+        public AIPlatformValue discoverResources(AIPlatformValue aiplatform, ConfigResponse platformConfig)
             throws PluginException {
 		
-		RuntimeResourceReport rrr = new RuntimeResourceReport(serverId);
 		SNMPClient client = new SNMPClient();
 		SNMPSession session;
 
-		log.debug("Running discover using config: " + platformConfig);
+		log.debug("Running discover using config: " + platformConfig.toProperties());
 		try {
-			session = client.getSession(config);
+			session = client.getSession(platformConfig);
 			int count = (int) session.getSingleValue(NUMBER_OF_UNITS).toLong();
 			log.debug("Number of units in stack: " + count);
 			for ( int unit=1; unit <= count; unit++ ) {
 				AIServerExtValue server = new AIServerExtValue();
-				//this should probably be a unique id for each server :(
-				server.setId(new Integer(serverId));
 				try {
 					ConfigResponse productConfig = new ConfigResponse();
 					productConfig.setValue("unitNumber" , unit);
 					try {
-						productConfig.setValue("Description", session.getSingleValue(UNIT_DESCRIPTION).toString());
+						productConfig.setValue("Description", session.getSingleValue(UNIT_DESCRIPTION + "." + unit).toString());
 					} catch (SNMPException e) {
 						throw new SNMPException("Error getting SNMP value: " + e.getMessage(), e);
 					}
@@ -86,17 +83,19 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 					} catch (Exception e) {
 						throw new PluginException("Unable to generate product config.");
 					}
+					log.debug("Adding AIServerValue: " + server.toString());
 					aiplatform.addAIServerValue(server);
 				} catch (SNMPException e) {
 					throw new SNMPException("Error getting SNMP value: " + e.getMessage(), e);
 				}
 			}
+		} catch (NullPointerException e) {
+			e.printStackTrace();
 		} catch (SNMPException e) {
 			throw new PluginException("Error getting SNMP value: " + e.getMessage(), e);
 		}
 
-		rrr.addAIPlatform(aiplatform);
-		return rrr;
+		return aiplatform;
 	}
 
 	public List discoverServers(ServerDetector plugin, ConfigResponse config, SNMPSession session, String type) {
