@@ -43,6 +43,7 @@ import org.hyperic.hq.product.ServerDetector;
 import org.hyperic.hq.appdef.shared.AIPlatformValue;
 import org.hyperic.hq.appdef.shared.AIServerExtValue;
 import org.hyperic.hq.product.ServerResource;
+import org.hyperic.hq.product.ServiceResource;
 import org.hyperic.util.config.ConfigResponse;
 
 import org.hyperic.hq.autoinventory.ServerSignature;
@@ -126,6 +127,7 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 
 				try {
 					server.setDescription(session.getSingleValue(UNIT_DESCRIPTION + "." + unit).toString());
+					getServiceResources(server, session, unit);
 				} catch (SNMPException e) {
 					throw new SNMPException("Error getting SNMP value: " + e.getMessage(), e);
 				}
@@ -133,7 +135,7 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 				server.setProductConfig(productConfig);
 				server.setMeasurementConfig();
 				
-				log.debug("Adding AIServerValue: " + server.toString());
+				log.debug("Adding Server: " + server.toString());
 				servers.add(server);
 			}
 		} catch (SNMPException e) {
@@ -142,29 +144,51 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 		return servers;
 	}
 
+	public void getServiceResources(ServerResource server, SNMPSession session, int unit) throws PluginException {
+		List names;
+		try {
+			names = session.getColumn("ifName");
+
+		} catch (SNMPException e) {
+			throw new PluginException("Error getting SNMP column: " + e.getMessage(), e);
+		}
+		for (int i=0; i<names.size(); i++) {
+			String portName = (String)names.get(i).toString();
+			if (portName.indexOf(" " + Integer.toString(unit-1) + "/") != -1) {
+				SNMPValue snmpVal = (SNMPValue)names.get(i);
+				String oid = snmpVal.getOID();
+				int idx = oid.lastIndexOf(".");
+				Integer index = Integer.parseInt(oid.substring(idx+1));
+				//ServiceResource service = createServiceResource("Interface");
+				ServiceResource service = new ServiceResource();
+				service.setType("Interface");
+				service.setServiceName("Port " + index.toString());
+				ConfigResponse productConfig = new ConfigResponse();
+				productConfig.setValue("port", index);
+				//service.setProductConfig(productConfig);
+				setProductConfig(service, productConfig);
+				service.setMeasurementConfig();
+				service.setControlConfig();
+				server.addService(service);
+				log.debug("Adding service: " + service.toString());
+			}
+		}
+	}
+
 	public List discoverServices(ConfigResponse config) {
-		log.debug("In  discoverServices(ConfigResponse config)");
-		return new ArrayList();
+		log.debug("Discovering Services using config: " + config.toProperties());
+		List services = new ArrayList();
+		return services;
 	}
 
-	public List discoverServerResources(ConfigResponse config) {
-		log.debug("In  discoverServerResources(ConfigResponse config)");
-		return new ArrayList();
+	public SNMPSession getSNMPSession(ConfigResponse config) {
+		SNMPClient client = new SNMPClient();
+		SNMPSession session;
+		try {
+			session = client.getSession(config);
+		} catch (SNMPException e) {
+			throw new PluginException("Error getting SNMP session: " + e.getMessage(), e);
+		}
+		return session;
 	}
-
-	public ServerSignature getServerSignature() {
-		log.debug("Was asked for server sigs.");
-		return new ServerSignature("Stack Unit", new String[0], new String[0], new String[0]);
-	}
-
-	public List discoverServers(ServerDetector plugin, ConfigResponse config, SNMPSession session, String type) {
-		log.debug("In discoverServers(ServerDetector plugin, ConfigResponse config, SNMPSession session, String type)");
-		return new ArrayList();
-	}
-
-	public List discoverServers(ConfigResponse config) {
-		log.debug("In discoverServers(ConfigResponse config)");
-		return new ArrayList();
-	}
-
 }

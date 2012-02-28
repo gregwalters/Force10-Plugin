@@ -64,82 +64,81 @@
         	                defaultOn="true"
 	                        collectionType="trendsup"/>
 			<metric name="Management Status"
-				template="${snmp.template}:chStackUnitMgmtStatus"
+				alias="chStackUnitMgmtStatus"
 				category="Utilization"
 				unit="none"
 				defaultOn="true"
 				collectionType="dynamic"/>
                         <metric name="Management Preference"
-                                template="${snmp.template}:chStackUnitAdmMgmtPreference"
+                                alias="chStackUnitAdmMgmtPreference"
                                 category="Utilization"
                                 unit="none"
                                 defaultOn="true"
                                 collectionType="dynamic"/>
-                        <metric name="Unit Status"
-                                template="${snmp.template}:chStackUnitStatus"
+                        <metric name="Status"
+                                alias="chStackUnitStatus"
                                 category="Utilization"
                                 unit="none"
                                 defaultOn="true"
 				indicator="true"
                                 collectionType="dynamic"/>
-                        <metric name="Unit Temperature"
-                                template="${snmp.template}:chStackUnitTemp"
+                        <metric name="Temperature"
+                                alias="chStackUnitTemp"
                                 category="Utilization"
                                 unit="none"
                                 defaultOn="true"
                                 indicator="true"
                                 collectionType="dynamic"/>
                         <metric name="Fan Tray Status"
-                                template="${snmp.template}:chSysFanTrayOperStatus"
+                                template="${snmp.template}:chSysFanTrayOperStatus.%unitNumber%.%unitNumber%"
                                 category="Utilization"
                                 unit="none"
                                 defaultOn="true"
                                 indicator="true"
                                 collectionType="dynamic"/>
                         <metric name="CPU Type"
-                                template="${snmp.template}:chStackUnitCpuType"
+                                alias="chStackUnitCpuType"
                                 category="Utilization"
                                 unit="none"
                                 defaultOn="true"
                                 indicator="false"
                                 collectionType="dynamic"/>
                         <metric name="CPU Usage 5 sec Avg"
-                                template="${snmp.template}:chStackUnitCpuUtil5Sec"
+                                alias="chStackUnitCpuUtil5Sec"
                                 category="Utilization"
                                 unit="percentage"
                                 defaultOn="true"
                                 indicator="true"
                                 collectionType="dynamic"/>
                         <metric name="CPU Usage 1 min Avg"
-                                template="${snmp.template}:chStackUnitCpuUtil1Min"
+                                alias="chStackUnitCpuUtil1Min"
                                 category="Utilization"
                                 unit="percentage"
                                 defaultOn="true"
                                 indicator="true"
                                 collectionType="dynamic"/>
                         <metric name="CPU Usage 5 min Avg"
-                                template="${snmp.template}:chStackUnitCpuUtil5Min"
+                                alias="chStackUnitCpuUtil5Min"
                                 category="Utilization"
                                 unit="percentage"
                                 defaultOn="true"
                                 indicator="true"
                                 collectionType="dynamic"/>
                         <metric name="Memory Usage"
-                                template="${snmp.template}:chStackUnitMemUsageUtil"
+                                alias="chStackUnitMemUsageUtil"
                                 category="Utilization"
                                 unit="percentage"
                                 defaultOn="true"
                                 indicator="true"
                                 collectionType="dynamic"/>
 			<service name="Interface">
+				<!-- <plugin type="autoinventory"/> -->
 				<config>
-					<option name="snmpIndexValue" description="Interface Name"/>
+					<option name="port" description="Interface Name"/>
 				</config>
 
-				<property name="snmpIndexName" value="nsIfName"/>
-
 				<metric name="Availability"
-					template="${snmp.template},Avail=true:nsIfStatus:${index}"
+					template="${snmp.template},Avail=true:ifOperStatus.%port%"
 					indicator="true"/>
 
 				<!-- http://support.hyperic.com/display/DOCS46/Write+an+SNMP+Plugin -->
