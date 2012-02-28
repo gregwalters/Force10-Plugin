@@ -114,10 +114,8 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 	public List getServerResources(ConfigResponse config) throws PluginException {
 		log.debug("Running server discovery using config: " + config.toProperties());
 		List servers = new ArrayList();
-		SNMPClient client = new SNMPClient();
-		SNMPSession session;
 		try {
-			session = client.getSession(config);
+			SNMPSession session = getSNMPSession(config);
 			int count = (int) session.getSingleValue(NUMBER_OF_UNITS).toLong();
 			log.debug("Number of units in stack: " + count);
 			for ( int unit=1; unit <= count; unit++ ) {
@@ -175,13 +173,42 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 		}
 	}
 
-	public List discoverServices(ConfigResponse config) {
+	public List discoverServices(ConfigResponse config) throws PluginException {
 		log.debug("Discovering Services using config: " + config.toProperties());
 		List services = new ArrayList();
+		SNMPSession session = getSNMPSession(config);
+		int unit = Integer.parseInt(config.getValue("unitNumber"));
+		List names;
+		try {
+			names = session.getColumn("ifName");
+		} catch (SNMPException e) {
+			throw new PluginException("Error getting SNMP column: " + e.getMessage(), e);
+		}
+                for (int i=0; i<names.size(); i++) {
+                        String portName = (String)names.get(i).toString();
+                        if (portName.indexOf(" " + Integer.toString(unit-1) + "/") != -1) {
+                                SNMPValue snmpVal = (SNMPValue)names.get(i);
+                                String oid = snmpVal.getOID();
+                                int idx = oid.lastIndexOf(".");
+                                Integer index = Integer.parseInt(oid.substring(idx+1));
+                                //ServiceResource service = createServiceResource("Interface");
+                                ServiceResource service = new ServiceResource();
+                                service.setType(this, "Interface");
+                                service.setServiceName("Port " + index.toString());
+                                ConfigResponse productConfig = new ConfigResponse();
+                                productConfig.setValue("port", index);
+                                //service.setProductConfig(productConfig);
+                                setProductConfig(service, productConfig);
+                                service.setMeasurementConfig();
+                                service.setControlConfig();
+				log.debug("Adding service: " + service.toString());
+				services.add(service);
+			}
+		}
 		return services;
 	}
 
-	public SNMPSession getSNMPSession(ConfigResponse config) {
+	public SNMPSession getSNMPSession(ConfigResponse config) throws PluginException {
 		SNMPClient client = new SNMPClient();
 		SNMPSession session;
 		try {

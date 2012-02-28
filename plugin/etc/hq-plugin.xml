@@ -133,6 +133,7 @@
                                 collectionType="dynamic"/>
 			<service name="Interface">
 				<!-- <plugin type="autoinventory"/> -->
+				<plugin type="measurement" class="org.hyperic.hq.product.SNMPMeasurementPlugin"/>
 				<config>
 					<option name="port" description="Interface Name"/>
 				</config>
