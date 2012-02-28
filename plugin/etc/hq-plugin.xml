@@ -38,6 +38,9 @@
 			<plugin type="autoinventory" class="com.contegix.gregwalters.hyperic.hq.plugin.force10.force10ServerDetector"/> 
 			<!-- <plugin type="autoinventory" class="org.hyperic.hq.product.jmx.MxServerDetector"/> -->
 			<plugin type="measurement" class="net.hyperic.hq.product.SNMPMeasurementPlugin"/>
+			
+
+			<property name="template" value="${snmp.template}:${alias}.%unitNumber%" />
 
 			<properties>
 				<property name="chStackUnitNumber" description="Stack Unit Number" />
@@ -52,7 +55,7 @@
 			<property name="HAS_BUILTIN_SERVICES" value="true"/>
 
 	                <metric name="Availability"
-	                        template="${snmp.template},Avail=true:chStackUnitUpTime"
+	                        template="${snmp.template},Avail=true:chStackUnitUpTime.%unitNumber%"
 	                        indicator="true"/>
 	                <metric name="Uptime"
 	                        alias="chStackUnitUpTime"

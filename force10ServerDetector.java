@@ -45,6 +45,8 @@ import org.hyperic.hq.appdef.shared.AIServerExtValue;
 import org.hyperic.hq.product.ServerResource;
 import org.hyperic.util.config.ConfigResponse;
 
+import org.hyperic.hq.autoinventory.ServerSignature;
+
 import org.hyperic.snmp.SNMPClient;
 import org.hyperic.snmp.SNMPException;
 import org.hyperic.snmp.SNMPSession;
@@ -70,19 +72,29 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 			log.debug("Number of units in stack: " + count);
 			for ( int unit=1; unit <= count; unit++ ) {
 				AIServerExtValue server = new AIServerExtValue();
+				//ServerResource server = createServerResource("/" + unit);
 				try {
+					ConfigResponse measurementConfig = new ConfigResponse();
 					ConfigResponse productConfig = new ConfigResponse();
-					productConfig.setValue("unitNumber" , unit);
+					ConfigResponse controlConfig = new ConfigResponse();
+					measurementConfig.setValue("unitNumber" , unit);
 					try {
-						productConfig.setValue("Description", session.getSingleValue(UNIT_DESCRIPTION + "." + unit).toString());
+						server.setDescription(session.getSingleValue(UNIT_DESCRIPTION + "." + unit).toString());
 					} catch (SNMPException e) {
 						throw new SNMPException("Error getting SNMP value: " + e.getMessage(), e);
 					}
 					try {
 						server.setProductConfig(productConfig.encode());
+						server.setMeasurementConfig(measurementConfig.encode());
+						server.setControlConfig(controlConfig.encode());
 					} catch (Exception e) {
 						throw new PluginException("Unable to generate product config.");
 					}
+					server.setServerTypeName("Stack Unit");
+					server.setName(getPlatformName() + " Unit " + unit);
+					server.setInstallPath("/" + unit);
+					server.setAutoinventoryIdentifier(getPlatformName() + " Unit " + unit);
+					server.setCTime(new Long(System.currentTimeMillis()));
 					log.debug("Adding AIServerValue: " + server.toString());
 					aiplatform.addAIServerValue(server);
 				} catch (SNMPException e) {
@@ -98,19 +110,36 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 		return aiplatform;
 	}
 
-	public List discoverServers(ServerDetector plugin, ConfigResponse config, SNMPSession session, String type) {
-		log.debug("In discoverServers(ServerDetector plugin, ConfigResponse config, SNMPSession session, String type)");
-		return new ArrayList();
-	}
+	public List getServerResources(ConfigResponse config) throws PluginException {
+		log.debug("Running server discovery using config: " + config.toProperties());
+		List servers = new ArrayList();
+		SNMPClient client = new SNMPClient();
+		SNMPSession session;
+		try {
+			session = client.getSession(config);
+			int count = (int) session.getSingleValue(NUMBER_OF_UNITS).toLong();
+			log.debug("Number of units in stack: " + count);
+			for ( int unit=1; unit <= count; unit++ ) {
+				ServerResource server =  createServerResource("/" + unit);
+				ConfigResponse productConfig = new ConfigResponse();
+				productConfig.setValue("unitNumber" , unit);
 
-	public List discoverServers(ConfigResponse config) {
-		log.debug("In discoverServers(ConfigResponse config)");
-		return new ArrayList();
-	}
+				try {
+					server.setDescription(session.getSingleValue(UNIT_DESCRIPTION + "." + unit).toString());
+				} catch (SNMPException e) {
+					throw new SNMPException("Error getting SNMP value: " + e.getMessage(), e);
+				}
 
-	public List getServerResources(ConfigResponse config) {
-		log.debug("In getServerResources(ConfigResponse conf)");
-		return new ArrayList();
+				server.setProductConfig(productConfig);
+				server.setMeasurementConfig();
+				
+				log.debug("Adding AIServerValue: " + server.toString());
+				servers.add(server);
+			}
+		} catch (SNMPException e) {
+			throw new PluginException("Error getting SNMP value: " + e.getMessage(), e);
+		}
+		return servers;
 	}
 
 	public List discoverServices(ConfigResponse config) {
@@ -122,4 +151,20 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 		log.debug("In  discoverServerResources(ConfigResponse config)");
 		return new ArrayList();
 	}
+
+	public ServerSignature getServerSignature() {
+		log.debug("Was asked for server sigs.");
+		return new ServerSignature("Stack Unit", new String[0], new String[0], new String[0]);
+	}
+
+	public List discoverServers(ServerDetector plugin, ConfigResponse config, SNMPSession session, String type) {
+		log.debug("In discoverServers(ServerDetector plugin, ConfigResponse config, SNMPSession session, String type)");
+		return new ArrayList();
+	}
+
+	public List discoverServers(ConfigResponse config) {
+		log.debug("In discoverServers(ConfigResponse config)");
+		return new ArrayList();
+	}
+
 }
