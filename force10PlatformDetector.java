@@ -16,10 +16,10 @@ public class force10PlatformDetector extends NetworkDevicePlatformDetector {
 		log.debug("Starting getPlatformResource(ConfigResponse config)");
 		PlatformResource platform = super.getPlatformResource(config);
 		log.debug("Got platform");
-		force10ServerDetector detector = new force10ServerDetector();
-		log.debug("Got detector");
-		detector.discoverResources(platform, config);
-		log.debug("Finished running detection.");
+		//force10ServerDetector detector = new force10ServerDetector();
+		//log.debug("Got detector");
+		//detector.discoverResources(platform, config);
+		//log.debug("Finished running detection.");
 		//return detector.discoverResources(platform, config);
 		log.debug("Platform object: " + platform.toString());
 		return platform;

@@ -133,15 +133,84 @@
                                 collectionType="dynamic"/>
 			<service name="Interface">
 				<!-- <plugin type="autoinventory"/> -->
-				<plugin type="measurement" class="org.hyperic.hq.product.SNMPMeasurementPlugin"/>
+				<!-- <plugin type="measurement" class="org.hyperic.hq.product.SNMPMeasurementPlugin"/> -->
+				<plugin type="measurement" class="com.contegix.gregwalters.hyperic.hq.plugin.force10.force10MeasurementPlugin" />
 				<config>
 					<option name="port" description="Interface Name"/>
 				</config>
+	                        <properties>
+                               		<property name="ifDescr" description="Interface Description" />
+				</properties>
+
+				<property name="template" value="${snmp.template}:${alias}.%port%" />
 
 				<metric name="Availability"
-					template="${snmp.template},Avail=true:ifOperStatus.%port%"
+					template="f10-${snmp.template}:ifOperStatus.%port%"
 					indicator="true"/>
-
+				<metric name="Operation Status"
+					alias="ifOperStatus"
+					indicator="true"/>
+				<metric name="In Discards"
+					alias="ifInDiscards"
+					collectionType="trendsup"
+					category="THROUGHPUT" />
+				<metric name="Out Discards"
+					alias="ifOutDiscards"
+					collectionType="trendsup"
+					category="THROUGHPUT" />
+				<metric name="In Errors"
+					alias="ifInErrors"
+					collectionType="trendsup"
+					category="THROUGHPUT" />
+                                <metric name="Out Errors"
+                                        alias="ifOutErrors"
+                                        collectionType="trendsup"
+                                        category="THROUGHPUT" />
+				<metric name="Multicast or Broadcast Packets In"
+					alias="ifInNUcastPkts"
+					collectionType="trendsup"
+					category="THROUGHPUT" />
+                                <metric name="Multicast or Broadcast Packets Out"
+                                        alias="ifOutNUcastPkts"
+                                        collectionType="trendsup"
+                                        category="THROUGHPUT" />
+				<metric name="Number of Octets In"
+					alias="ifInOctets"
+					collectionType="trendsup"
+					category="THROUGHPUT" />
+                                <metric name="Number of Octets Out"
+                                        alias="ifOutOctets"
+                                        collectionType="trendsup"
+                                        category="THROUGHPUT" />
+				<metric name="Unicast Packets In"
+					alias="ifInUcastPkts"
+					collectionType="trendsup"
+					category="THROUGHPUT" />
+                                <metric name="Unicast Packets Out"
+                                        alias="ifOutUcastPkts"
+                                        collectionType="trendsup"
+                                        category="THROUGHPUT" />
+				<metric name="Time Since Last Change"
+					alias="ifLastChange"
+					collectionType="trendsup"
+					units="jiffys"
+					category="THROUGHPUT" />
+				<metric name="MTU"
+					alias="ifMtu"
+					collectionType="trendsup"
+					category="THROUGHPUT" />
+				<metric name="Output Packet Queue Size"
+					alias="ifOutQLen"
+					collectionType="trendsup"
+                                        category="THROUGHPUT" />
+                                <metric name="Interface Speed"
+                                        alias="ifSpeed"
+                                        collectionType="static"
+                                        category="THROUGHPUT" />
+                                <metric name="Interface Type"
+                                        alias="ifType"
+                                        collectionType="static"
+                                        category="THROUGHPUT" />
 				<!-- http://support.hyperic.com/display/DOCS46/Write+an+SNMP+Plugin -->
 			</service>
 		</server>
