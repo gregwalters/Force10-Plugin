@@ -70,16 +70,33 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
 			for ( int unit=1; unit <= count; unit++ ) {
 				ServerResource server =  createServerResource("/" + unit);
 				ConfigResponse productConfig = new ConfigResponse();
+				ConfigResponse customProperties = new ConfigResponse();
 				productConfig.setValue("unitNumber" , unit);
 
 				try {
 					server.setDescription(session.getSingleValue(UNIT_DESCRIPTION + "." + unit).toString());
+					customProperties.setValue("chStackUnitNumber", session.getSingleValue("chStackUnitNumber." + 
+														unit).toString());
+					customProperties.setValue("chStackUnitModelID", session.getSingleValue("chStackUnitModelID." +
+														unit).toString());
+					customProperties.setValue("chStackUnitDescription", session.getSingleValue("chStackUnitDescription." +
+														unit).toString());
+					customProperties.setValue("chStackUnitCodeVersion", session.getSingleValue("chStackUnitCodeVersion." +
+														unit).toString());
+					customProperties.setValue("chStackUnitSerialNumber", session.getSingleValue("chStackUnitSerialNumber."+
+														unit).toString());
+					customProperties.setValue("chStackUnitMfgDate", session.getSingleValue("chStackUnitMfgDate." +
+														unit).toString());
+					customProperties.setValue("chStackUnitMacAddress", session.getSingleValue("chStackUnitMacAddress." +
+														unit).toString());
 				} catch (SNMPException e) {
 					throw new SNMPException("Error getting SNMP value: " + e.getMessage(), e);
 				}
 
 				server.setProductConfig(productConfig);
+				server.setCustomProperties(customProperties);
 				server.setMeasurementConfig();
+				server.setName(config.getValue("platform.fqdn") + " Stack Unit " + unit);
 				
 				log.debug("Adding Server: " + server.toString());
 				servers.add(server);
@@ -116,6 +133,12 @@ public class force10ServerDetector  extends ServerDetector implements AutoServer
                                 productConfig.setValue("port", index);
                                 //service.setProductConfig(productConfig);
                                 setProductConfig(service, productConfig);
+				ConfigResponse customProperties = new ConfigResponse();
+				try {
+					service.setDescription(session.getSingleValue("ifDescr." + index).toString());
+				} catch (SNMPException e) {
+					throw new PluginException("Error getting SNMP value: " + e.getMessage(), e);
+				}
                                 service.setMeasurementConfig();
                                 service.setControlConfig();
 				log.debug("Adding service: " + service.toString());

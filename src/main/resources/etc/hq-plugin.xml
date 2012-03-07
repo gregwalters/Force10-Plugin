@@ -25,10 +25,10 @@
 			indicator="true"/>
 		<metric name="Uptime"
 			alias="sysUpTime"
-			category="AVAILABILITY"
+			category="Utilization"
 			units="jiffys"
 			defaultOn="true"
-			collectionType="static"/>
+			indicator="true" />
 
 		<server name="Stack Unit">
 			<config>
@@ -59,10 +59,10 @@
 	                        indicator="true"/>
 	                <metric name="Uptime"
 	                        alias="chStackUnitUpTime"
-                        	category="AVAILABILITY"
+                        	category="Utilization"
                 	        units="jiffys"
         	                defaultOn="true"
-	                        collectionType="trendsup"/>
+				indicator="true" />
 			<metric name="Management Status"
 				alias="chStackUnitMgmtStatus"
 				category="Utilization"
@@ -138,17 +138,10 @@
 				<config>
 					<option name="port" description="Interface Name"/>
 				</config>
-	                        <properties>
-                               		<property name="ifDescr" description="Interface Description" />
-				</properties>
-
 				<property name="template" value="${snmp.template}:${alias}.%port%" />
 
 				<metric name="Availability"
 					template="f10-${snmp.template}:ifOperStatus.%port%"
-					indicator="true"/>
-				<metric name="Operation Status"
-					alias="ifOperStatus"
 					indicator="true"/>
 				<metric name="In Discards"
 					alias="ifInDiscards"
@@ -160,11 +153,11 @@
 					category="THROUGHPUT" />
 				<metric name="In Errors"
 					alias="ifInErrors"
-					collectionType="trendsup"
+					indicator="true"
 					category="THROUGHPUT" />
                                 <metric name="Out Errors"
                                         alias="ifOutErrors"
-                                        collectionType="trendsup"
+					indicator="true"
                                         category="THROUGHPUT" />
 				<metric name="Multicast or Broadcast Packets In"
 					alias="ifInNUcastPkts"
@@ -192,26 +185,26 @@
                                         category="THROUGHPUT" />
 				<metric name="Time Since Last Change"
 					alias="ifLastChange"
-					collectionType="trendsup"
 					units="jiffys"
-					category="THROUGHPUT" />
+					indicator="true"
+					category="Performance" />
 				<metric name="MTU"
 					alias="ifMtu"
-					collectionType="trendsup"
-					category="THROUGHPUT" />
+					collectionType="static" />
 				<metric name="Output Packet Queue Size"
 					alias="ifOutQLen"
-					collectionType="trendsup"
-                                        category="THROUGHPUT" />
+					indicator="true"
+                                        category="Performance" />
                                 <metric name="Interface Speed"
                                         alias="ifSpeed"
+					indicator="true"
                                         collectionType="static"
-                                        category="THROUGHPUT" />
+                                        category="Performance" />
                                 <metric name="Interface Type"
                                         alias="ifType"
+					indicator="true"
                                         collectionType="static"
-                                        category="THROUGHPUT" />
-				<!-- http://support.hyperic.com/display/DOCS46/Write+an+SNMP+Plugin -->
+                                        category="Performance" />
 			</service>
 		</server>
 	</platform>
